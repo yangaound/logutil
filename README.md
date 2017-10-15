@@ -54,6 +54,5 @@ users working threads just need to push message to memory.
 >>> logger.info('flush immediately since long time no flush')
 >>>
 
-Note: 2 type of Rotating logger just maintains one handler, others users added will be poped out 
-      when the method `rotate_handler()` be called. 
+Note: Rotating logger just maintains one handler, others users added will be poped out when the method `rotate_handler()` be called. 
 ```
