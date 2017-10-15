@@ -1,6 +1,6 @@
 # logutil
-This module defines classes which extends ``loging.Logger`` or its's derived classes for applications.
-該模块定義了3個類別, 用來擴充``loging.Logger``或其子類, 實現更靈活的事件日誌系統。
+This module defines classes which extends ``loging.Logger`` or its's derived classes for applications.__
+該模块定義了3個類別, 用來擴充``loging.Logger``或其子類, 實現更靈活的事件日誌系統。__
 
 
 # class ``logutil.SimpleLogger``(filename, level='info', format="[%(levelname)s][%(asctime)s]", name=None)
