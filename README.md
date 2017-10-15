@@ -3,7 +3,7 @@ This module defines classes which extends ``loging.Logger`` or its's derived cla
 該模块定義3個類別， 用來擴充``loging.Logger``或其子類， 實現更靈活的事件日誌系統。
 
 
-# class ``logutil.SimpleLogger``(filename, level='info', format="[%(levelname)s][%(asctime)s]", name=None)
+### class ``logutil.SimpleLogger``(filename, level='info', format="[%(levelname)s][%(asctime)s]", name=None)
 ```	
 This logger creates a file named {filename} and appends message into it. 
 argument `filename` will be used if argument `name` is omitted.
@@ -14,7 +14,7 @@ argument `filename` will be used if argument `name` is omitted.
 >>>
 ```
 
-# class ``logutil.TimedRotatingLogger``(filename, suffixFmt='%Y-%m-%d', **kwargs)
+### class ``logutil.TimedRotatingLogger``(filename, suffixFmt='%Y-%m-%d', **kwargs)
 ```
 This class inherits ``logutil.SimpleLogger`` and the argument `kwargs` will be passed directly to 
 super class as additional keyword arguments.
@@ -28,7 +28,7 @@ This logger auto rotate file according to argument `suffixFmt`; in default, file
 >>>
 ```
 
-# class ``logutil.TimedRotatingMemoryLogger``(filename, capacity=100, flushInterval=120, flushLevel='ERROR', **kwargs)
+### class ``logutil.TimedRotatingMemoryLogger``(filename, capacity=100, flushInterval=120, flushLevel='ERROR', **kwargs)
 This class inherits ``logutil.TimedRotatingLogger``.
 This logger buffer message untill a condiction event driven to flush buffering asynchronously in a new thread named 'flusher';
 users working threads just need to push message to memory. 
