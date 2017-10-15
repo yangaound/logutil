@@ -14,11 +14,10 @@ argument `filename` will be used if argument `name` is omitted.
 ```
 
 ### class ``logutil.TimedRotatingLogger``(filename, suffixFmt='%Y-%m-%d', **kwargs)
-```
-This class inherits ``logutil.SimpleLogger`` and the argument `kwargs` will be passed directly to 
-super class as additional keyword arguments.
+This class inherits ``logutil.SimpleLogger`` and the argument `kwargs` will be passed directly to<br />
+super class as additional keyword arguments.<br />
 This logger auto rotate file according to argument `suffixFmt`; in default, file named "{filename}.%Y-%m-%d" will be created every day at midnight.
-
+```
 >>> import logutil, time
 >>> logger = logutil.TimedRotatingLogger('error_log', suffixFmt='%S')  # file "error_log.%S" be created and rotated each second
 >>> logger.info('message in a file')
@@ -28,8 +27,8 @@ This logger auto rotate file according to argument `suffixFmt`; in default, file
 ```
 
 ### class ``logutil.TimedRotatingMemoryLogger``(filename, capacity=100, flushInterval=120, flushLevel='ERROR', **kwargs)
-This class inherits ``logutil.TimedRotatingLogger``.
-This logger buffer message untill a condiction event driven to flush buffering asynchronously in a new thread named 'flusher';
+This class inherits ``logutil.TimedRotatingLogger``.<br />
+This logger buffer message untill a condiction event driven to flush buffering asynchronously in a new thread named 'flusher';<br />
 users working threads just need to push message to memory. 
 
 ```
