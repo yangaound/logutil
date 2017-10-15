@@ -4,10 +4,9 @@ This module defines classes which extends ``loging.Logger`` or its's derived cla
 
 
 ### class ``logutil.SimpleLogger``(filename, level='info', format="[%(levelname)s][%(asctime)s]", name=None)
-```	
 This logger creates a file named {filename} and appends message into it. 
 argument `filename` will be used if argument `name` is omitted.
-
+```
 >>> import logutil
 >>> logger = logutil.SimpleLogger('error.log') 
 >>> logger.info('message')                     
