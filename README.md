@@ -16,10 +16,10 @@ argument `filename` will be used if argument `name` is omitted.
 ### class ``logutil.TimedRotatingLogger``(filename, suffixFmt='%Y-%m-%d', **kwargs)
 This class inherits ``logutil.SimpleLogger`` and the argument `kwargs` will be passed directly to<br />
 super class as additional keyword arguments.<br />
-This logger auto rotate file according to argument `suffixFmt`; in default, file named "{filename}.%Y-%m-%d" will be created every day at midnight.
+This logger auto rotate file according to argument `suffixFmt`; in default,  "{filename}.%Y-%m-%d" will be created every day at midnight.
 ```
 >>> import logutil, time
->>> logger = logutil.TimedRotatingLogger('error_log', suffixFmt='%S')  # file "error_log.%S" be created and rotated each second
+>>> logger = logutil.TimedRotatingLogger('error_log', suffixFmt='%S')  # file will be rotated each second
 >>> logger.info('message in a file')
 >>> time.sleep(1.1)
 >>> logger.info('message in another file')
@@ -36,7 +36,8 @@ users working threads just need to push message to memory.
 >>>
 >>> # 1. condiction satisfied by capacity(buffering is full)
 >>> logger = logutil.TimedRotatingMemoryLogger('error_log', capacity=3)
->>> logger.addHandler(logutil._MemoryHandler(filename=None, target=logging.StreamHandler(), capacity=3)) # add another handler for demo
+>>> # add another handler for demo
+>>> logger.addHandler(logutil._MemoryHandler(filename=None, target=logging.StreamHandler(), capacity=3)) 
 >>> logger.info('not flush')
 >>> logger.info('not flush')
 >>> logger.info('flush immediately because buffering is full')
