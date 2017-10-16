@@ -17,7 +17,7 @@ LoggerClass = logging.getLoggerClass()
 
 class g:
     logLevel = logging.INFO
-    logRecordFmt = "[%(levelname)s][%(asctime)s][%(threadName)] - %(message)s"
+    logRecordFmt = "[%(levelname)s][%(asctime)s][%(threadName)s] - %(message)s"
     suffixFmt = '%Y-%m-%d'
     capacity = 128
     flushLevel = logging.ERROR
@@ -103,7 +103,7 @@ class TimedRotatingLogger(SimpleLogger):
         `str`
 
     E.g., Create and use `TimedRotatingLogger`:
-    >>> logger = TimedRotatingLogger('error_log', suffixFmt='%S') # rotating file each second
+    >>> logger = TimedRotatingLogger('error_log', suffixFmt='%S') # rotating file at each second
     >>> logger.info('msg')
     """
 
