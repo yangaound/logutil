@@ -1,47 +1,45 @@
 # coding=utf-8
-
-import logging, os, threading, time
+import logging
+import os
+import threading
+import time
 from logging.handlers import MemoryHandler
 
-from .trace import handle_exception, Trace, Traceable, LogException
+from trace import Trace, Traceable, LogException, handle_exception, errno_message_map
 
 
 __version__ = '1.0.0'
 
 
+_lock = threading.Lock()
 LoggerClass = logging.getLoggerClass()
-logRecordFmt = "[%(levelname)s][%(asctime)s] at %(module)s.py:%(lineno)s - %(message)s"
-#logRecordFmt = "[%(levelname)s][%(asctime)s] - %(message)s"
 
 
-def make_handler(filename, capacity=1, format=logRecordFmt, **verbose):
+class g:
+    logLevel = logging.INFO
+    logRecordFmt = "[%(levelname)s][%(asctime)s][%(threadName)] - %(message)s"
+    suffixFmt = '%Y-%m-%d'
+    capacity = 128
+    flushLevel = logging.ERROR
+    flushInterval = 120           # seconds
+
+
+def make_handler(filename, capacity=1, format=g.logRecordFmt, **verbose):
     """
     Factory function that return either a new instance of `logging.Handler` or `_MemoryHandler`(with buffer).
 
-    :param filename:
-        It will be passed to create a `logging.FileHandler` if argument capacity <= 1.
-    :type filename:
-        `basestring`
-
-    :param capacity:
-        It will be passed to create a `_MemoryHandler` if its value greater then 1.
-        Default value: 1
-    :type capacity:
-       `int`
-
-    :param format:
-        Format string for the instance of `logging.FileHandler`.
-        Default: "[%(levelname)s][%(asctime)s] at %(module)s.py:%(lineno)s: %(message)s"
-    :type format:
-       `str`
+    :param filename: It will be passed to create a `logging.FileHandler` if argument capacity <= 1.
+    :param capacity: It will be passed to create a `_MemoryHandler` if its value greater then 1.
+    :param format: Format string for a instance of `logging.FileHandler`.
     """
 
     filename = os.path.abspath(filename)
     if capacity > 1:
         handler = _MemoryHandler(filename, capacity, **verbose)
     else:
-        if not os.path.exists(os.path.dirname(filename) or './'):
-            os.makedirs(os.path.dirname(filename))
+        with _lock:
+            if not os.path.exists(os.path.dirname(filename) or './'):
+                os.makedirs(os.path.dirname(filename))
         handler = logging.FileHandler(filename)
         handler.setFormatter(logging.Formatter(format))
     return handler
@@ -49,11 +47,11 @@ def make_handler(filename, capacity=1, format=logRecordFmt, **verbose):
 
 class SimpleLogger(LoggerClass):
     """
-    This class inherits `logging.Logger` or it's sub class, a `logging.FileHandler` will be created
+    This class inherits `logging.Logger` or it's derived class, a `logging.FileHandler` will be created
     when it is instantiated.
 
     :param filename:
-        Required argument; it will be used to create a `logging.FileHandler`
+        Required argument it will be used to create a `logging.FileHandler`
     :type filename:
         `basestring`
 
@@ -71,29 +69,25 @@ class SimpleLogger(LoggerClass):
        `str`
 
     :param name:
-        Optional keyword argument. The name of logger; the namespace will be used if omitted.
+        Optional keyword argument. The name of logger; the argument filename will be used if it's omitted.
     :type format:
         `str`
 
     E.g., Create and use SimpleLogger:
     >>> logger = SimpleLogger('error.log')
     >>> logger.info('msg')
-
-    E.g., specify  optional arguments:
-    >>> logger = SimpleLogger('error.log', level='INFO', format="[%(levelname)s] %(message)s", name=__name__)
-    >>> logger.info('msg')
     """
 
-    def __init__(self, filename, level=logging.INFO, format=logRecordFmt, name=__name__, ):
-        LoggerClass.__init__(self, name)
+    def __init__(self, filename, level=g.logLevel, format=g.logRecordFmt, name=None, ):
+        LoggerClass.__init__(self, name or filename)
         self.setLevel(getattr(logging, level.upper()) if isinstance(level, basestring) else level)   # set level
         self.addHandler(make_handler(filename, format=format))                                      # add a handler
 
 
 class TimedRotatingLogger(SimpleLogger):
     """
-    This class inherits `SimpleLogger` and extends a method named `rotate_handler()` to auto rotate log file in time
-    according to the argument suffixFmt. A `TimedRotatingLogger` just maintains one handler, 
+    This class inherits `SimpleLogger` and add a method named `rotate_handler()` to auto rotate log file in time
+    according to the argument suffixFmt. A `TimedRotatingLogger` just maintains one handler,
     others will be popped out when `rotate_handler()` be called.
 
     :param filename:
@@ -102,41 +96,37 @@ class TimedRotatingLogger(SimpleLogger):
         `basestring`
 
     :param suffixFmt:
-        Optional keyword argument. It will be used to call time.strftime(suffixFmt) to get the suffix of full_filename,
+        Optional keyword argument. It will be used to call time.strftime(suffixFmt) to get a suffix of full_filename,
         full_filename = filename + '.' + time.strftime(suffixFmt).
         Default value: "%Y-%m-%d", it means that the log file will be rotated every day at midnight.
     :type suffixFmt:
         `str`
 
     E.g., Create and use `TimedRotatingLogger`:
-    >>> logger = TimedRotatingLogger('error_log')
-    >>> logger.info('msg')
-
-    E.g., specify  arguments:
-    >>> logger = TimedRotatingLogger('error_log', suffixFmt='%Y-%m-%d', level='INFO', )
+    >>> logger = TimedRotatingLogger('error_log', suffixFmt='%S') # rotating file each second
     >>> logger.info('msg')
     """
 
-    def __init__(self, filename, suffixFmt='%Y-%m-%d', **kwargs):
-        super(TimedRotatingLogger, self).__init__(filename + '.' + time.strftime(suffixFmt), **kwargs)
+    def __init__(self, filename, suffixFmt=g.suffixFmt, **kwargs):
+        SimpleLogger.__init__(self, filename + '.' + time.strftime(suffixFmt), **kwargs)
         self._baseFilename = filename
         self._suffixFmt = suffixFmt
         self._suffix = time.strftime(self._suffixFmt)
         self._handlerParams = kwargs
-        self._rLock = threading.RLock()
+        self._user_rLock = threading.RLock()
         self.handlers = list()
         self.rotate_handler()
 
     def handle(self, record):
         if self._suffix != time.strftime(self._suffixFmt):
-            with self._rLock:
+            with self._user_rLock:
                 if self._suffix != time.strftime(self._suffixFmt):
                     self._suffix = time.strftime(self._suffixFmt)
                     self.rotate_handler()
         LoggerClass.handle(self, record)
 
     def rotate_handler(self):
-        with self._rLock:
+        with self._user_rLock:
             for h in self.handlers:
                 h.close()
             self.handlers = list()
@@ -173,19 +163,19 @@ class TimedRotatingMemoryLogger(TimedRotatingLogger):
         `int` = {logging.DEBUG | logging.INFO | logging.WARNING | logging.CRITICAL | logging.ERROR}
     """
 
-    def __init__(self, filename, capacity=100, flushInterval=120, flushLevel=logging.ERROR, **kwargs):
-        super(TimedRotatingMemoryLogger, self).__init__(filename, **kwargs)
+    def __init__(self, filename, capacity=g.capacity, flushInterval=g.flushInterval, flushLevel=g.flushLevel, **kwargs):
+        TimedRotatingLogger.__init__(self, filename, **kwargs)
         self._handlerParams.update(capacity=capacity, flushInterval=flushInterval,
         flushLevel=getattr(logging, flushLevel.upper()) if isinstance(flushLevel, basestring) else flushLevel, )
 
     def flush(self):
-        with self._rLock:
+        with self._user_rLock:
             for h in self.handlers:
                 h.flush()
 
 
 class _MemoryHandler(MemoryHandler):
-    def __init__(self, filename, capacity, flushLevel, flushInterval, target=None, **kwargs):
+    def __init__(self, filename, capacity=g.capacity, flushLevel=g.flushLevel, flushInterval=g.flushInterval, target=None, **kwargs):
         MemoryHandler.__init__(self, capacity, flushLevel, target or make_handler(filename, capacity=1, **kwargs))
         self.__flushInterval = flushInterval
         self.__lastFlushTime = time.time()
