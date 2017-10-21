@@ -3,7 +3,7 @@ This package defines classes which extends ``loging.Logger`` or its's derived cl
 該package定義了3個類別， 用來擴充``loging.Logger``或其子類， 以實現更靈活的應用。
 
 
-### class ``logutil.SimpleLogger``(filename, level='info', format="[%(levelname)s][%(asctime)s]", name=None)
+### class ``logutil.SimpleLogger``(filename, level='info', format="[%(levelname)s][%(asctime)s] - %(message)s", name=None)
 This logger creates a file named {filename} and appends message into it. 
 argument `filename` will be used if argument `name` is omitted.
 ```
