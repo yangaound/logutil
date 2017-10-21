@@ -27,7 +27,7 @@ This class inherits ``logutil.SimpleLogger`` and the argument `kwargs` will be p
 ### class ``logutil.TimedRotatingMemoryLogger``(filename, capacity=100, flushInterval=120, flushLevel='ERROR', **kwargs)
 This class inherits ``logutil.TimedRotatingLogger``.
 This logger buffers message untill a condiction event driven to flush buffering asynchronously in a new thread named 'flusher';
-users working threads just need to push message to memory. 
+clients working threads just need to push message to memory. 
 
 ```
 >>> import logutil, logging, time
@@ -52,6 +52,6 @@ users working threads just need to push message to memory.
 >>> logger.info('flush immediately since long time no flush')
 >>>
 
-Note: Rotating logger just maintains one handler, others users added will be poped out when the method 
+Note: Rotating logger just maintains one handler, others clients added will be poped out when the method 
 `rotate_handler()` be called. 
 ```
