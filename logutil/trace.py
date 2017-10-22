@@ -27,9 +27,9 @@ def handle_exception(logger, throws=False):
             except (SystemExit, KeyboardInterrupt):
                 raise
             except LogException as (log_level, errno_or_msg):
-                msg = errno_message_map.get(errno_or_msg) or errno_or_msg
-                line = Trace.file(Trace._caller_stack())
-                getattr(logger, log_level.lower())(line + ':\n' + message)
+                message = errno_message_map.get(errno_or_msg) or errno_or_msg
+                file = Trace.file(Trace._caller_stack())
+                getattr(logger, log_level.lower())(file + ':\n' + message)
                 if throws:
                     raise
             except:
