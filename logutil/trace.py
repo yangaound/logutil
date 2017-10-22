@@ -79,7 +79,7 @@ class Trace:
     def file(caller_stack=None):
         stack = caller_stack or Trace._caller_stack()
         ns = stack[0].f_globals.get('__name__')
-        return "{file}" % stack[1]
+        return "%s" % stack[1]
 
 
 class Traceable(object):
