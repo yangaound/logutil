@@ -2,12 +2,22 @@ import functools
 import inspect
 import sys
 import traceback
+    
+
+errno_message_map = {
+
+}
 
 
+def set_errno_message_map(dict):
+    errno_message_map.update(dict)
+
+    
 class LogException(Exception):
     pass
+    
 
-
+    
 def handle_exception(logger, throws=False):
     def function_wrapper(func):
         @functools.wraps(func)
@@ -16,8 +26,10 @@ def handle_exception(logger, throws=False):
                 return func(*args, **kwagrs)
             except (SystemExit, KeyboardInterrupt):
                 raise
-            except LogException as (log_level, message):
-                getattr(logger, log_level.lower())(message)
+            except LogException as (log_level, errno_or_msg):
+                msg = errno_message_map.get(errno_or_msg) or errno_or_msg
+                line = Trace.file(Trace._caller_stack())
+                getattr(logger, log_level.lower())(line + ':\n' + message)
                 if throws:
                     raise
             except:
@@ -64,14 +76,14 @@ class Trace:
         return stack[0].f_globals.get('__name__') + '.' + stack[3]
 
     @staticmethod
-    def line(caller_stack=None):
+    def file(caller_stack=None):
         stack = caller_stack or Trace._caller_stack()
         ns = stack[0].f_globals.get('__name__')
-        return "{ns}.py:{line}".format(ns=ns, line=stack[2])
+        return "{file}" % stack[1]
 
 
 class Traceable(object):
-    __clsname = 'Traceable'
+    __clsname__ = 'Traceable'
 
     def this(self):
         return u"{ns}.{obj}".format(ns=self.__class__.__module__, obj=self.__class__.__name__, )
@@ -80,9 +92,9 @@ class Traceable(object):
     def base(cls, level=0):
         cls = cls.__base__ if (level == 0) else cls
         if cls.__base__ == object:
-            raise AssertionError("There are no any type objects has the attribute: '__clsname'")
+            raise AssertionError("There are no any class objects has the attribute: '__clsname__'")
 
-        attr_name = '_' + cls.__name__ + '__clsname'
+        attr_name = '_' + cls.__name__ + '__clsname__'
         if hasattr(cls, attr_name):
             return u"{ns}.{obj}".format(ns=cls.__module__, obj=getattr(cls, attr_name), )
         return cls.__base__.base(level + 1)
