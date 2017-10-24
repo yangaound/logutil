@@ -1,46 +1,35 @@
-import functools
 import inspect
-import sys
-import traceback
-    
-
-errno_message_map = {
-
-}
 
 
-def set_errno_message_map(dict):
-    errno_message_map.update(dict)
+def cls_name(cls):
+    return cls.__module__ + '.' + cls.__name__
 
-    
-class LogException(Exception):
-    pass
-    
 
-    
-def handle_exception(logger, throws=False):
-    def function_wrapper(func):
-        @functools.wraps(func)
-        def function_invoker(*args, **kwagrs):
-            try:
-                return func(*args, **kwagrs)
-            except (SystemExit, KeyboardInterrupt):
-                raise
-            except LogException as (log_level, errno_or_msg):
-                message = errno_message_map.get(errno_or_msg) or errno_or_msg
-                file = Trace.file(Trace._caller_stack())
-                getattr(logger, log_level.lower())(file + ':\n' + message)
-                if throws:
-                    raise
-            except:
-                logger.error(traceback.format_exc().decode(sys.getfilesystemencoding()))
-                if throws:
-                    raise
-        return function_invoker
-    return function_wrapper
+def type_name(obj):
+    return obj.__class__.__module__ + '.' + obj.__class__.__name__
+
+
+def cls_from_stact(stack):
+    locals = stack[0].f_locals
+    globals = stack[0].f_globals
+    if locals.has_key('self'):
+        return locals['self'].__class__
+    elif locals.has_key('cls'):
+        return locals['cls']
+    else:
+        clss = filter(lambda x: inspect.isclass(x) and hasattr(x, stack[3]), globals.values())
+        if not clss:
+            raise AssertionError('No class object')
+        if len(clss) > 1:
+            raise AssertionError('Multiple classes has this method: %s' % str(clss))
+        return clss[0]
 
 
 class Trace:
+    @staticmethod
+    def stack(pointer=1):
+        return inspect.stack()[pointer]
+
     @staticmethod
     def _caller_stack(pointer=2):
         return inspect.stack()[pointer]
@@ -49,52 +38,53 @@ class Trace:
     def cls(caller_stack=None):
         try:
             stack = caller_stack or Trace._caller_stack()
-            cls = stack[0].f_locals['self'].__class__
-            return cls.__module__ + '.' + cls.__name__
+            cls = cls_from_stact(stack)
+            return cls_name(cls)
         except KeyError:
-            return AssertionError('outside of context, no class object')
+            raise AssertionError('outside of context, no class object')
 
     @staticmethod
     def method(caller_stack=None):
-        try:
-            stack = caller_stack or Trace._caller_stack()
-            cls = stack[0].f_locals['self'].__class__
-            return cls.__module__ + '.' + cls.__name__ + '.' + stack[3]
-        except KeyError:
-            return AssertionError('outside of context, no class object')
+        stack = caller_stack or Trace._caller_stack()
+        return Trace.cls(stack) + '.' + stack[3]
 
     @staticmethod
     def module(caller_stack=None):
         stack = caller_stack or Trace._caller_stack()
-        return stack[0].f_globals.get('__name__')
+        return stack[0].f_globals['__name__']
 
     @staticmethod
     def func(caller_stack=None):
         stack = caller_stack or Trace._caller_stack()
         if stack[3] == '<module>':
-            return AssertionError('outside of context, no function object')
+            return AssertionError('No function object')
         return stack[0].f_globals.get('__name__') + '.' + stack[3]
 
     @staticmethod
     def file(caller_stack=None):
         stack = caller_stack or Trace._caller_stack()
-        ns = stack[0].f_globals.get('__name__')
-        return "%s" % stack[1]
+        return stack[0].f_code.co_filename
+
+    @staticmethod
+    def line(caller_stack=None):
+        stack = caller_stack or Trace._caller_stack()
+        return "%s:%s" % (Trace.file(stack), stack[0].f_lineno)
 
 
 class Traceable(object):
-    __clsname__ = 'Traceable'
-
+    __clsname = 'Traceable'
+	
     def this(self):
-        return u"{ns}.{obj}".format(ns=self.__class__.__module__, obj=self.__class__.__name__, )
+        return type_name(self)
 
     @classmethod
     def base(cls, level=0):
         cls = cls.__base__ if (level == 0) else cls
         if cls.__base__ == object:
-            raise AssertionError("There are no any class objects has the attribute: '__clsname__'")
+            raise AssertionError("There are no any classes has the attribute: '__clsname'")
 
-        attr_name = '_' + cls.__name__ + '__clsname__'
+        attr_name = '_' + cls.__name__ + '__clsname'
         if hasattr(cls, attr_name):
-            return u"{ns}.{obj}".format(ns=cls.__module__, obj=getattr(cls, attr_name), )
+            return cls.__module__ + '.' + getattr(cls, attr_name)
         return cls.__base__.base(level + 1)
+    
