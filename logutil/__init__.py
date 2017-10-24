@@ -211,7 +211,9 @@ class _MemoryHandler(MemoryHandler):
         
 
 import functools
-import traceback    
+import traceback 
+import sys
+
 from trace import Trace, Traceable
 
 
