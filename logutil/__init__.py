@@ -5,8 +5,6 @@ import threading
 import time
 from logging.handlers import MemoryHandler
 
-from trace import Trace, Traceable, LogException, handle_exception, errno_message_map
-
 
 __version__ = '1.0.0'
 
@@ -210,3 +208,42 @@ class _MemoryHandler(MemoryHandler):
         if self.__flusher and self.__flusher.is_alive():
             self.__flusher.join()
         MemoryHandler.close(self)
+        
+
+import functools
+import traceback    
+from trace import Trace, Traceable
+
+
+errno_message_map = {
+}
+
+
+def set_errno_message_map(dict):
+    errno_message_map.update(dict)
+
+    
+class LogException(Exception):
+    pass
+    
+    
+def handle_exception(logger, throws=False):
+    def function_wrapper(func):
+        @functools.wraps(func)
+        def function_invoker(*args, **kwagrs):
+            try:
+                return func(*args, **kwagrs)
+            except (SystemExit, KeyboardInterrupt):
+                raise
+            except LogException as (log_level, errno_or_msg):
+                message = errno_message_map.get(errno_or_msg) or errno_or_msg
+                file = Trace.file(Trace._caller_stack())
+                getattr(logger, log_level.lower())(file + ':\n' + message)
+                if throws:
+                    raise
+            except:
+                logger.error(traceback.format_exc().decode(sys.getfilesystemencoding()))
+                if throws:
+                    raise
+        return function_invoker
+    return function_wrapper
