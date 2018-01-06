@@ -94,7 +94,7 @@ class SimpleLogger(LoggerClass):
     """
 
     def __init__(self, name=__name__, level='INFO', **handlerParams):
-        LoggerClass.__init__(self, name, level.supper())
+        LoggerClass.__init__(self, name, level.upper())
         self._handlerParams = handlerParams
         self._create_and_attache_handler()
 
