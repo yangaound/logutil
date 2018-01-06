@@ -29,7 +29,7 @@ FLUSH_INTERVAL = 120
 
 
 def make_handler(filename=None, format=LOG_RECORD_FMT, capacity=1, flushInterval=FLUSH_INTERVAL, flushLevel=FLUSH_LEVEL):
-    """Factory function that return  a new instance of `logging.FileHandler` or `_MemoryHandler`(with buffer) or 
+    """Factory function that return a new instance of `logging.FileHandler` or `_MemoryHandler`(with buffer) or 
     `logging.StreamHandler` according to the argument `capacity` and `filename`.
 
     :param filename: It will be passed to create a `logging.FileHandler` if its not None and the argument capacity <= 1 .
@@ -53,9 +53,10 @@ def make_handler(filename=None, format=LOG_RECORD_FMT, capacity=1, flushInterval
 
 
 class SimpleLogger(LoggerClass):
-    """This class inherits ``logging.Logger`` or its derived class. When it instantiating, a `logging.FileHandler`
-    using file named {filename} will be created. the argument `filename` will be used as this logger name if
-    argument `name` is omitted.
+    """This class inherits ``logging.Logger`` or its derived class. When it instantiating, argument `name` and `level`
+   will be passed directly to the supper class and the argument `handlerParams` will be used to create a appropriate 
+   handler for this logger. When it instantiating, create a `logging.FileHandler` if the keyword argument `filename` 
+   is present, otherwise create a `logging.StreamHandler` using `sys.stdout` as the underlying stream.
 
     :param name:
         Optional argument, The name of this logger. `__name__` will be used if its omitted.
@@ -108,9 +109,9 @@ class SimpleLogger(LoggerClass):
 
 
 class TimedRotatingLogger(SimpleLogger):
-    """This class inherits ``logutil.SimpleLogger`` and the argument `kwargs` will be passed directly to super class 
-    as additional keyword arguments. This logger auto rotate file according to argument `suffixFmt`; a file named 
-    "{filename}.%Y-%m-%d" will be created every dayat midnight by default.
+    """This class inherits ``logutil.SimpleLogger``. This logger auto rotate file according to argument `suffixFmt`.
+    if the keyword argument `filename` is present, a file named `{filename}.%Y-%m-%d` will be created every day 
+    at midnight by default.
 
     Note: this logger just maintains one handler, others clients added will be popped out when method 
     `._rotate_handler()` be called.
@@ -133,7 +134,7 @@ class TimedRotatingLogger(SimpleLogger):
         `basestring`
 
     :param format:
-        Optional keyword argument; Format string for handlers` .
+        Optional keyword argument; Format string for handlers .
         Default value: "[%(levelname)s][%(asctime)s] - %(message)s"
     :type format:
        `str`
@@ -180,8 +181,8 @@ class TimedRotatingLogger(SimpleLogger):
 
 
 class TimedRotatingMemoryLogger(TimedRotatingLogger):
-    """This class inherits ``logutil.TimedRotatingLogger`` and the argument `kwargs` will be passed to
-    super class as additional keyword arguments. This logger buffers messages; clients working threads 
+    """This class inherits ``logutil.TimedRotatingLogger`` and the argument `handlerParams` will be 
+    passed to super class as additional keyword arguments. This logger buffers messages; clients working threads 
     just need to push message to memory; a new thread named 'flusher' asynchronously flush buffer once 
     some condition be satisfied.
 
