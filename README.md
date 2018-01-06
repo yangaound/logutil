@@ -3,7 +3,7 @@ This package defines 3 classes which extend ``loging.Logger`` or its derived cla
 該package定義了3個類別， 用來擴充``loging.Logger``或其子類， 以實現寫訊息至檔案、緩存若干條訊息並自動刷訊息、旋轉檔案等應用。
 
 
-### class ``logutil.FileLogger``(name=None, level='info', **handlerParams)
+### class ``logutil.Simpleogger``(name=None, level='info', **handlerParams)
 This class inherits ``logging.Logger`` or its derived class. When it instantiating, a `logging.FileHandler` will be created if the key work argument `filename` is present, otherwise `logging.StreamHandler` using sys.stdout as the underlying stream will be created. the key work argument `filename` will be used as this logger name if the argument `name` is None.
 ```
 >>> import logutil
