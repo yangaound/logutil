@@ -18,7 +18,7 @@ This class inherits ``logging.Logger`` or its derived class. argument `name` and
 ```
 
 ### class ``logutil.TimedRotatingLogger``(name=`__name__`, level='INFO', **handlerParams)
-This class inherits ``logutil.SimpleLogger``. This logger auto rotate file according to argument `suffixFmt`. if the keyword argument `filename` is present, a file named "{filename}.%Y-%m-%d" will be created every day
+This class inherits ``logutil.SimpleLogger``. This logger auto rotate file according to argument `suffixFmt`. if the keyword argument `filename` is present, a file named `{filename}.%Y-%m-%d` will be created every day
 at midnight by default.
 ```
 >>> import logutil, time
