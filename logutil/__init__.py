@@ -16,7 +16,7 @@ LoggerClass = logging.getLoggerClass()
 
 #  Level for loggers
 LOG_LEVEL = logging.INFO
-# Format string for a instance of  `logging.FileHandler`
+# Format string for handlers
 LOG_RECORD_FMT = "[%(levelname)s][%(asctime)s] - %(message)s"
 #  time format used for generating the suffix of a filename
 SUFFIX_FMT = '%Y-%m-%d'
@@ -29,11 +29,11 @@ FLUSH_INTERVAL = 120
 
 
 def make_handler(filename=None, format=LOG_RECORD_FMT, capacity=1, flushInterval=FLUSH_INTERVAL, flushLevel=FLUSH_LEVEL):
-    """Factory function that return  a new instance of `logging.Handler` or `_MemoryHandler`(with buffer) or `logging.StreamHandler`
+    """Factory function that return  a new instance of `logging.FileHandler` or `_MemoryHandler`(with buffer) or `logging.StreamHandler`
     according to the argument `capacity` and `filename`.
 
     :param filename: It will be passed to create a `logging.FileHandler` if its not None and the argument capacity <= 1 .
-    :param format: Format string for the instance of `logging.FileHandler`.
+    :param format: Format string for handlers.
     :param capacity: It will be passed to create a `_MemoryHandler` if its value greater then 1.
     :param flushInterval: the argument of the `_MemoryHandler`.
     :param flushLevel: the argument of the `_MemoryHandler`.
@@ -44,7 +44,7 @@ def make_handler(filename=None, format=LOG_RECORD_FMT, capacity=1, flushInterval
         filename = os.path.abspath(filename)
         with _lock:
             if not os.path.exists(os.path.dirname(filename) or './'):
-                os.makedirs(os.path.dirname(filename), mode=0755)
+                os.makedirs(os.path.dirname(filename), mode=0777)
         handler = logging.FileHandler(filename)
     handler.setFormatter(logging.Formatter(format))
     if capacity > 1:
