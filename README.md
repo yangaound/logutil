@@ -3,8 +3,8 @@ This package defines 3 classes which extend ``loging.Logger`` or its derived cla
 該package定義了3個類別， 用來擴充``loging.Logger``或其子類， 以實現寫訊息至檔案、緩存若干條訊息並自動刷訊息、旋轉檔案等應用。
 
 
-### class ``logutil.Simpleogger``(name=None, level='info', **handlerParams)
-This class inherits ``logging.Logger`` or its derived class. When it instantiating, a `logging.FileHandler` will be created if the key work argument `filename` is present, otherwise `logging.StreamHandler` using sys.stdout as the underlying stream will be created. the key work argument `filename` will be used as this logger name if the argument `name` is None.
+### class ``logutil.Simpleogger``(name=__name__, level='INFO', **handlerParams)
+This class inherits ``logging.Logger`` or its derived class. When it instantiating, a `logging.FileHandler` will be created if the key work argument `filename` is present, otherwise `logging.StreamHandler` using `sys.stdout` as the underlying stream will be created.
 ```
 >>> import logutil
 >>> # create a logger named 'log' and write messages to stdout
@@ -17,7 +17,7 @@ This class inherits ``logging.Logger`` or its derived class. When it instantiati
 >>> logger.info('msg')
 ```
 
-### class ``logutil.TimedRotatingLogger``(name=None, level='info', **handlerParams)
+### class ``logutil.TimedRotatingLogger``(name=__name__, level='INFO', **handlerParams)
 This class inherits ``logutil.SimpleLogger``. This logger auto rotate file according to argument `suffixFmt`. if the key work argument `filename` is present, a file named "{filename}.%Y-%m-%d" will be created every day
 at midnight by default.
 ```
@@ -29,7 +29,7 @@ at midnight by default.
 >>>
 ```
 
-### class ``logutil.TimedRotatingMemoryLogger``(name=None, level='info', **handlerParams)
+### class ``logutil.TimedRotatingMemoryLogger``(name=__name__, level='INFO', **handlerParams)
 This class inherits ``logutil.TimedRotatingLogger`` and the argument `handlerParams` will be passed to super class as additional keyword arguments. This logger buffers messages; clients working threads just need to push message to memory; a new thread named 'flusher' asynchronously flush buffer once some condition be satisfied.
 ```
 >>> import logutil, time
@@ -62,7 +62,7 @@ This class inherits ``logutil.TimedRotatingLogger`` and the argument `handlerPar
 >>>
 
 Note: Rotating filename logger just maintains one handler, others clients added will be poped out when the method 
-`.rotate_handler()` be called. 
+`._rotate_handler()` be called. 
 ```
 ### Comparison of performance of three types of logger
 ```
