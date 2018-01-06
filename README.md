@@ -4,7 +4,7 @@ This package defines 3 classes which extend ``loging.Logger`` or its derived cla
 
 
 ### class ``logutil.Simpleogger``(name=`__name__`, level='INFO', **handlerParams)
-This class inherits ``logging.Logger`` or its derived class. argument `name` and `level` will be passed directly to the supper class and the argument `handlerParams` will be used to create a appropriate handler for this logger. When it instantiating, create a `logging.FileHandler` if the key work argument `filename` is present, otherwise create a `logging.StreamHandler` using `sys.stdout` as the underlying stream.
+This class inherits ``logging.Logger`` or its derived class. argument `name` and `level` will be passed directly to the supper class and the argument `handlerParams` will be used to create a appropriate handler for this logger. When it instantiating, create a `logging.FileHandler` if the keyword argument `filename` is present, otherwise create a `logging.StreamHandler` using `sys.stdout` as the underlying stream.
 ```
 >>> import logutil
 >>> # create a logger named 'log' and write messages to stdout
@@ -18,7 +18,7 @@ This class inherits ``logging.Logger`` or its derived class. argument `name` and
 ```
 
 ### class ``logutil.TimedRotatingLogger``(name=`__name__`, level='INFO', **handlerParams)
-This class inherits ``logutil.SimpleLogger``. This logger auto rotate file according to argument `suffixFmt`. if the key work argument `filename` is present, a file named "{filename}.%Y-%m-%d" will be created every day
+This class inherits ``logutil.SimpleLogger``. This logger auto rotate file according to argument `suffixFmt`. if the keyword argument `filename` is present, a file named "{filename}.%Y-%m-%d" will be created every day
 at midnight by default.
 ```
 >>> import logutil, time
