@@ -44,7 +44,7 @@ def make_handler(filename=None, format=LOG_RECORD_FMT, capacity=1, flushInterval
         filename = os.path.abspath(filename)
         with _lock:
             if not os.path.exists(os.path.dirname(filename) or './'):
-                os.makedirs(os.path.dirname(filename), mode=0777)
+                os.makedirs(os.path.dirname(filename), )
         handler = logging.FileHandler(filename)
     handler.setFormatter(logging.Formatter(format))
     if capacity > 1:
@@ -58,13 +58,12 @@ class SimpleLogger(LoggerClass):
     argument `name` is omitted.
 
     :param name:
-        Optional argument. The name of the logger; the kwy word argument `filename` will be used if its omitted.
+        Optional argument, The name of this logger. `__name__` will be used if its omitted.
     :type format:
         `str`
 
     :param level:
-        Optional  argument; Logger level.
-        Default value: logging.INFO
+        Optional argument, The level of this logger. 'INFO' will be assumed if its omitted.
     :type level:
         `str` = {"DEBUG"|"INFO"|"WARNING"|"CRITICAL"|"ERROR"} or
         `int` or `long` = {logging.DEBUG | logging.INFO | logging.WARNING | logging.CRITICAL | logging.ERROR}
@@ -93,8 +92,8 @@ class SimpleLogger(LoggerClass):
     >>> logger.info('msg')
     """
 
-    def __init__(self, name=None, level=None, **handlerParams):
-        LoggerClass.__init__(self, name and name.isupper() or handlerParams.get('filename') or __name__, level or LOG_LEVEL)
+    def __init__(self, name=__name__, level='INFO', **handlerParams):
+        LoggerClass.__init__(self, name, level.supper())
         self._handlerParams = handlerParams
         self._create_and_attache_handler()
 
@@ -117,13 +116,12 @@ class TimedRotatingLogger(SimpleLogger):
     `._rotate_handler()` be called.
 
     :param name:
-        Optional argument. The name of the logger; the kwy word argument `filename` will be used if its omitted.
+        Optional argument, The name of this logger. `__name__` will be used if its omitted.
     :type format:
         `str`
 
     :param level:
-        Optional  argument; Logger level.
-        Default value: logging.INFO
+        Optional argument, The level of this logger. 'INFO' will be assumed if its omitted.
     :type level:
         `str` = {"DEBUG"|"INFO"|"WARNING"|"CRITICAL"|"ERROR"} or
         `int` or `long` = {logging.DEBUG | logging.INFO | logging.WARNING | logging.CRITICAL | logging.ERROR}
@@ -152,7 +150,7 @@ class TimedRotatingLogger(SimpleLogger):
     >>> logger.info('msg')
     """
 
-    def __init__(self, name=None, level=None, **handlerParams):
+    def __init__(self,  name=__name__, level='INFO', **handlerParams):
         self._baseFilename = handlerParams.get('filename')
         self._suffixFmt = handlerParams.pop('suffixFmt', SUFFIX_FMT)
         self._suffix = time.strftime(self._suffixFmt)
@@ -191,13 +189,12 @@ class TimedRotatingMemoryLogger(TimedRotatingLogger):
     `._rotate_handler()` be called.
 
     :param name:
-        Optional argument. The name of the logger; the kwy word argument `filename` will be used if its omitted.
+        Optional argument, The name of this logger. `__name__` will be used if its omitted.
     :type format:
         `str`
 
     :param level:
-        Optional  argument; Logger level.
-        Default value: logging.INFO
+        Optional argument, The level of this logger. 'INFO' will be assumed if its omitted.
     :type level:
         `str` = {"DEBUG"|"INFO"|"WARNING"|"CRITICAL"|"ERROR"} or
         `int` or `long` = {logging.DEBUG | logging.INFO | logging.WARNING | logging.CRITICAL | logging.ERROR}
@@ -240,7 +237,7 @@ class TimedRotatingMemoryLogger(TimedRotatingLogger):
         `int` = {logging.DEBUG | logging.INFO | logging.WARNING | logging.CRITICAL | logging.ERROR}
     """
 
-    def __init__(self, name=None, level=None, **handlerParams):
+    def __init__(self, name=__name__, level='INFO', **handlerParams):
         capacity = handlerParams.get('capacity') or CAPACITY
         flushInterval = handlerParams.get('flushInterval') or FLUSH_INTERVAL
         flushLevel = handlerParams.get('flushLevel') or FLUSH_LEVEL
