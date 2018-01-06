@@ -1,6 +1,6 @@
 # logutil
-This package defines 3 classes which extend ``loging.Logger`` or its derived classes for application in logging and buffering messages as well as rotating filename.<br />
-該package定義了3個類別， 用來擴充``loging.Logger``或其子類， 以實現寫訊息至檔案、緩存若干條訊息並自動刷訊息、旋轉檔案等應用。
+This package defines 3 classes which extend ``logging.Logger`` or its derived classes for application in logging and buffering messages as well as rotating filename.<br />
+該package定義了3個類別， 用來擴充``logging.Logger``或其子類， 以實現寫訊息至檔案、緩存若干條訊息並自動刷訊息、旋轉檔案等應用。
 
 
 ### class ``logutil.Simpleogger``(name=`__name__`, level='INFO', **handlerParams)
