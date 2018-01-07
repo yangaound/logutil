@@ -34,8 +34,6 @@ def make_handler(filename=None, format="[%(levelname)s][%(asctime)s] - %(message
     handler.setFormatter(logging.Formatter(format))
     if capacity > 1:
         handler = _MemoryHandler(flushInterval, capacity=capacity, flushLevel=flushLevel, target=handler)
-
-    print handler
     return handler
 
 
@@ -204,8 +202,8 @@ class _MemoryHandler(MemoryHandler):
                 self.buffer = buffered
                 print '[CRITICAL] [%s] Can not start a new thread' % time.strftime('%Y-%m-%dT%H:%M:%S')
                 time.sleep(0.01)
-            except (SystemExit, KeyboardInterrupt):
-                print '[CRITICAL] [%s] System error occurred when flushing logger buffer' % time.strftime('%Y-%m-%dT%H:%M:%S')
+            except KeyboardInterrupt:
+                print '[CRITICAL] [%s] Interrupt error occurred when flushing logger buffer' % time.strftime('%Y-%m-%dT%H:%M:%S')
 
     def __flush(self, target, buffered):
         with self.__condition:
