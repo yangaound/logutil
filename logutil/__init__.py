@@ -12,27 +12,12 @@ _lock = threading.Lock()
 LoggerClass = logging.getLoggerClass()
 
 
-# configuration for this module
+def make_handler(filename=None, format="[%(levelname)s][%(asctime)s] - %(message)s", capacity=1, flushInterval=120,
+                 flushLevel=logging.ERROR):
+    """Factory function that return a new instance of `logging.FileHandler`  or  `logging.StreamHandler` or `_MemoryHandler`(with buffer)
+    according to the argument `capacity` and `filename`.
 
-#  Level for loggers
-LOG_LEVEL = logging.INFO
-# Format string for handlers
-LOG_RECORD_FMT = "[%(levelname)s][%(asctime)s] - %(message)s"
-#  time format used for generating the suffix of a filename
-SUFFIX_FMT = '%Y-%m-%d'
-# buffer size for memory loggers
-CAPACITY = 128
-# flush level for memory loggers
-FLUSH_LEVEL = logging.ERROR
-#  time interval for memory loggers (units: seconds)
-FLUSH_INTERVAL = 120
-
-
-def make_handler(filename=None, format=LOG_RECORD_FMT, capacity=1, flushInterval=FLUSH_INTERVAL, flushLevel=FLUSH_LEVEL):
-    """Factory function that return a new instance of `logging.FileHandler` or `_MemoryHandler`(with buffer) or 
-    `logging.StreamHandler` according to the argument `capacity` and `filename`.
-
-    :param filename: It will be passed to create a `logging.FileHandler` if its not None and the argument capacity <= 1 .
+    :param filename: It will be passed to create a `logging.FileHandler` if it's not None and the argument capacity <= 1 .
     :param format: Format string for handlers.
     :param capacity: It will be passed to create a `_MemoryHandler` if its value greater then 1.
     :param flushInterval: the argument of the `_MemoryHandler`.
@@ -49,37 +34,16 @@ def make_handler(filename=None, format=LOG_RECORD_FMT, capacity=1, flushInterval
     handler.setFormatter(logging.Formatter(format))
     if capacity > 1:
         handler = _MemoryHandler(flushInterval, capacity=capacity, flushLevel=flushLevel, target=handler)
+
+    print handler
     return handler
 
 
 class SimpleLogger(LoggerClass):
     """This class inherits ``logging.Logger`` or its derived class and the argument `name` as well as `level`
-    will be passed directly to the super class. the key of `handlerParams` can be `filename` and `format`
+    will be passed directly to the super class. the keys of `handlerParams` can be `filename` and `format`
     which will be used to create a appropriate handler that is a `logging.FileHandler` if the keyword argument
     `filename` is present or a `logging.StreamHandler` using `sys.stdout` as the underlying stream.
-
-    :param name:
-        Optional argument, The name of this logger. `__name__` will be used if it's omitted.
-    :type format:
-        `str`
-
-    :param level:
-        Optional argument, The level of this logger. 'INFO' will be assumed if it's omitted.
-    :type level:
-        `str` = {"DEBUG"|"INFO"|"WARNING"|"CRITICAL"|"ERROR"} or
-        `int` or `long` = {logging.DEBUG | logging.INFO | logging.WARNING | logging.CRITICAL | logging.ERROR}
-
-    :param filename:
-        Optional keyword argument it will be used to create a `logging.FileHandler`. if it's omitted or None,
-        create a `logging.StreamHandler` using `sys.stdout` as the underlying stream.
-    :type filename:
-        `basestring`
-
-    :param format:
-        Optional keyword argument; Format string for handlers` .
-        Default value: "[%(levelname)s][%(asctime)s] - %(message)s"
-    :type format:
-       `str`
 
     E.g., Create and use SimpleLogger:
     >>> import logutil
@@ -94,6 +58,15 @@ class SimpleLogger(LoggerClass):
     """
 
     def __init__(self, name=__name__, level='INFO', **handlerParams):
+        """
+        :param name: The name of this logger. `__name__` will be used if it's omitted.
+        :param level: The level of this logger. 'INFO' will be assumed if it's omitted.
+        :type level:
+        `str` = {"DEBUG"|"INFO"|"WARNING"|"CRITICAL"|"ERROR"} or
+        `int` or `long` = {logging.DEBUG | logging.INFO | logging.WARNING | logging.CRITICAL | logging.ERROR}
+        :param handlerParams:
+         Keyword arguments as passed to ``make_handler()``. the keys can be `filename` and `format`.
+        """
         LoggerClass.__init__(self, name, level.upper())
         self._handlerParams = handlerParams
         self._create_and_attache_handler()
@@ -116,42 +89,24 @@ class TimedRotatingLogger(SimpleLogger):
     Note: this logger just maintains one handler, others clients added will be popped out when method 
     `._rotate_handler()` be called.
 
-    :param name:
-        Optional argument, The name of this logger. `__name__` will be used if it's omitted.
-    :type format:
-        `str`
-
-    :param level:
-        Optional argument, The level of this logger. 'INFO' will be assumed if it's omitted.
-    :type level:
-        `str` = {"DEBUG"|"INFO"|"WARNING"|"CRITICAL"|"ERROR"} or
-        `int` or `long` = {logging.DEBUG | logging.INFO | logging.WARNING | logging.CRITICAL | logging.ERROR}
-
-    :param filename:
-        Optional keyword argument it will be used to create a `logging.FileHandler`. if it's omitted or None,
-        create a `logging.StreamHandler` using `sys.stdout` as the underlying stream.
-    :type filename:
-        `basestring`
-
-    :param format:
-        Optional keyword argument; Format string for handlers .
-        Default value: "[%(levelname)s][%(asctime)s] - %(message)s"
-    :type format:
-       `str`
-
-    :param suffixFmt:
-        Optional keyword argument. It will be used to call time.strftime(suffixFmt) to generate a suffix of full_filename,
-        full_filename = filename + '.' + time.strftime(suffixFmt).
-        Default value: "%Y-%m-%d", it means that files will be rotated every day at midnight.
-    :type suffixFmt:
-        `str`
-
     E.g., Create and use `TimedRotatingLogger`:
     >>> logger = TimedRotatingLogger(filename='error_log', suffixFmt='%S') # rotate file at each second
     >>> logger.info('msg')
     """
 
     def __init__(self,  name=__name__, level='INFO', suffixFmt='%Y-%m-%d', **handlerParams):
+        """
+        :param name: The name of this logger. `__name__` will be used if it's omitted.
+        :param level: The level of this logger. 'INFO' will be assumed if it's omitted.
+        :type level:
+        `str` = {"DEBUG"|"INFO"|"WARNING"|"CRITICAL"|"ERROR"} or
+        `int` or `long` = {logging.DEBUG | logging.INFO | logging.WARNING | logging.CRITICAL | logging.ERROR}
+        :param suffixFmt: It will be used to call time.strftime(suffixFmt) to generate a suffix of full_filename,
+         full_filename = filename + '.' + time.strftime(suffixFmt).
+         Default value: "%Y-%m-%d", it means that files will be rotated every day at midnight.
+        :param handlerParams:
+         Keyword arguments as passed to ``make_handler()``. the keys can be `filename` and `format`.
+        """
         self._suffixFmt = suffixFmt
         self._suffix = time.strftime(self._suffixFmt)
         self._baseFilename = handlerParams.get('filename')
@@ -188,63 +143,34 @@ class TimedRotatingMemoryLogger(TimedRotatingLogger):
 
     Note: this logger just maintains one handler, others clients added will be popped out when method
     `._rotate_handler()` be called.
-
-    :param name:
-        Optional argument, The name of this logger. `__name__` will be used if it's omitted.
-    :type format:
-        `str`
-
-    :param level:
-        Optional argument, The level of this logger. 'INFO' will be assumed if it's omitted.
-    :type level:
-        `str` = {"DEBUG"|"INFO"|"WARNING"|"CRITICAL"|"ERROR"} or
-        `int` or `long` = {logging.DEBUG | logging.INFO | logging.WARNING | logging.CRITICAL | logging.ERROR}
-
-    :param filename:
-        Optional keyword argument it will be used to create a `logging.FileHandler`. if it's omitted or None,
-        create a `logging.StreamHandler` using `sys.stdout` as the underlying stream.
-    :type filename:
-        `basestring`
-
-    :param format:
-        Optional keyword argument; Format string for handlers` .
-        Default value: "[%(levelname)s][%(asctime)s] - %(message)s"
-    :type format:
-       `str`
-
-    :param suffixFmt:
-        Optional keyword argument. It will be used to call time.strftime(suffixFmt) to generate a suffix of full_filename,
-        full_filename = filename + '.' + time.strftime(suffixFmt).
-        Default value: "%Y-%m-%d", it means that files will be rotated every day at midnight.
-    :type suffixFmt:
-        `str`
-
-    :param capacity:
-        Optional keyword argument, default value: 100. Buffer size; if the buffering is full, the `_MemoryHandler`
-        auto flush it.
-    :type capacity:
-        `int`
-
-    :param flushInterval:
-        Optional keyword argument, default: 120 second. Flush buffering if time.time() - theLastFlushTime > flushInterval.
-    :type flushInterval:
-        `int`
-
-    :param flushLevel:
-        Optional keyword argument, default: logging.ERROR. Flush buffering if the level of a logRecord greater then or
-        equal to the argument flushLevel.
-    :type flushLevel:
-        `str` = {"DEBUG"|"INFO"|"WARNING"|"CRITICAL"|"ERROR"} or
-        `int` = {logging.DEBUG | logging.INFO | logging.WARNING | logging.CRITICAL | logging.ERROR}
     """
 
     def __init__(self, name=__name__, level='INFO', suffixFmt='%Y-%m-%d', capacity=128, flushInterval=120, flushLevel='WARNING', 
                  **handlerParams):
+        """
+        :param name: The name of this logger. `__name__` will be used if it's omitted.
+        :param level: The level of this logger. 'INFO' will be assumed if it's omitted.
+        :type level:
+        `str` = {"DEBUG"|"INFO"|"WARNING"|"CRITICAL"|"ERROR"} or
+        `int` or `long` = {logging.DEBUG | logging.INFO | logging.WARNING | logging.CRITICAL | logging.ERROR}
+        :param suffixFmt: It will be used to call time.strftime(suffixFmt) to generate a suffix of full_filename,
+         full_filename = filename + '.' + time.strftime(suffixFmt).
+         Default value: "%Y-%m-%d", it means that files will be rotated every day at midnight.
+        :param capacity: Buffer size; if the buffering is full, the `_MemoryHandler` auto flush it.
+        :param flushInterval: Flush buffer if time.time() - .theLastFlushTime > flushInterval.
+        :param flushLevel: Flush buffer if the level of a logRecord greater then or equal to the argument flushLevel.
+        :type flushLevel:
+        `str` = {"DEBUG"|"INFO"|"WARNING"|"CRITICAL"|"ERROR"} or
+        `int` = {logging.DEBUG | logging.INFO | logging.WARNING | logging.CRITICAL | logging.ERROR}
+        :param handlerParams:
+         Keyword arguments as passed to ``make_handler()``. the keys can be `filename` and `format`.
+        """
+
         TimedRotatingLogger.__init__(self, name, level, suffixFmt,
             capacity=capacity,
-            flushLevel=flushLevel,
-            flushInterval=getattr(logging, flushLevel.upper()) if isinstance(flushLevel, basestring) else flushLevel,
-             **handlerParams,
+            flushLevel=getattr(logging, flushLevel.upper()) if isinstance(flushLevel, basestring) else flushLevel,
+            flushInterval=flushInterval,
+             **handlerParams
          )
 
     def flush(self):
@@ -276,7 +202,10 @@ class _MemoryHandler(MemoryHandler):
                 self.__condition.wait(1.0)
             except Exception:
                 self.buffer = buffered
+                print '[CRITICAL] [%s] Can not start a new thread' % time.strftime('%Y-%m-%dT%H:%M:%S')
                 time.sleep(0.01)
+            except (SystemExit, KeyboardInterrupt):
+                print '[CRITICAL] [%s] System error occurred when flushing logger buffer' % time.strftime('%Y-%m-%dT%H:%M:%S')
 
     def __flush(self, target, buffered):
         with self.__condition:
