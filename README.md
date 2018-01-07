@@ -4,7 +4,7 @@ This package defines 3 classes which extend ``logging.Logger`` or its derived cl
 
 
 ### class ``logutil.Simpleogger``(name=`__name__`, level='INFO', **handlerParams)
-This class inherits ``logging.Logger`` or its derived class. argument `name` and `level` will be passed directly to the super class. the argument `handlerParams` will be used to create a appropriate handler which is a `logging.FileHandler` if the keyword argument `filename` is present or a `logging.StreamHandler` using `sys.stdout` as the underlying stream.
+This class inherits ``logging.Logger`` or its derived class and the argument `name` as well as `level` will be passed directly to the super class. the argument `handlerParams` are optional keyword argument which key can be `filename` and `format`. `handlerParams` will be used to create a appropriate handler which is a `logging.FileHandler` if the keyword argument `filename` is present or a `logging.StreamHandler` using `sys.stdout` as the underlying stream.
 ```
 >>> import logutil
 >>> # create a logger named 'log' and write messages to stdout
@@ -17,8 +17,8 @@ This class inherits ``logging.Logger`` or its derived class. argument `name` and
 >>> logger.info('msg')
 ```
 
-### class ``logutil.TimedRotatingLogger``(name=`__name__`, level='INFO', **handlerParams)
-This class inherits ``logutil.SimpleLogger``. This logger auto rotate file according to argument `suffixFmt`. if the keyword argument `filename` is present, a file named `{filename}.%Y-%m-%d` will be created every day
+### class ``logutil.TimedRotatingLogger``(name=`__name__`, level='INFO',  suffixFmt='%Y-%m-%d', **handlerParams)
+This class inherits ``logutil.SimpleLogger`` and the argument `handlerParams` will be passed to super class as additional keyword arguments. This logger auto rotate file according to argument `suffixFmt`. if the keyword argument `filename` is present, a file named `{filename}.%Y-%m-%d` will be created every day
 at midnight by default.
 ```
 >>> import logutil, time
@@ -29,7 +29,7 @@ at midnight by default.
 >>>
 ```
 
-### class ``logutil.TimedRotatingMemoryLogger``(name=`__name__`, level='INFO', **handlerParams)
+### class ``logutil.TimedRotatingMemoryLogger``(name=`__name__`, level='INFO', suffixFmt='%Y-%m-%d', capacity=128, flushInterval=120, flushLevel='WARNING', **handlerParams)
 This class inherits ``logutil.TimedRotatingLogger`` and the argument `handlerParams` will be passed to super class as additional keyword arguments. This logger buffers messages; clients working threads just need to push message to memory; a new thread named 'flusher' asynchronously flush buffer once some condition be satisfied.
 ```
 >>> import logutil, time
