@@ -53,24 +53,25 @@ def make_handler(filename=None, format=LOG_RECORD_FMT, capacity=1, flushInterval
 
 
 class SimpleLogger(LoggerClass):
-    """This class inherits ``logging.Logger`` or its derived class. When it instantiating, argument `name` and `level`
-   will be passed directly to the supper class and the argument `handlerParams` will be used to create a appropriate 
-   handler for this logger. When it instantiating, create a `logging.FileHandler` if the keyword argument `filename` 
-   is present, otherwise create a `logging.StreamHandler` using `sys.stdout` as the underlying stream.
+    """This class inherits ``logging.Logger`` or its derived class and the argument `name` as well as `level` 
+    will be passed directly to the super class. the argument `handlerParams` are optional keyword argument 
+    which key can be `filename` and `format`. `handlerParams` will be used to create a appropriate handler 
+    that is a `logging.FileHandler`if the keyword argument `filename` is present or a `logging.StreamHandler`
+    using `sys.stdout` as the underlying stream.
 
     :param name:
-        Optional argument, The name of this logger. `__name__` will be used if its omitted.
+        Optional argument, The name of this logger. `__name__` will be used if it's omitted.
     :type format:
         `str`
 
     :param level:
-        Optional argument, The level of this logger. 'INFO' will be assumed if its omitted.
+        Optional argument, The level of this logger. 'INFO' will be assumed if it's omitted.
     :type level:
         `str` = {"DEBUG"|"INFO"|"WARNING"|"CRITICAL"|"ERROR"} or
         `int` or `long` = {logging.DEBUG | logging.INFO | logging.WARNING | logging.CRITICAL | logging.ERROR}
 
     :param filename:
-        Optional keyword argument it will be used to create a `logging.FileHandler`. if its omitted or None,
+        Optional keyword argument it will be used to create a `logging.FileHandler`. if it's omitted or None,
         create a `logging.StreamHandler` using `sys.stdout` as the underlying stream.
     :type filename:
         `basestring`
@@ -117,18 +118,18 @@ class TimedRotatingLogger(SimpleLogger):
     `._rotate_handler()` be called.
 
     :param name:
-        Optional argument, The name of this logger. `__name__` will be used if its omitted.
+        Optional argument, The name of this logger. `__name__` will be used if it's omitted.
     :type format:
         `str`
 
     :param level:
-        Optional argument, The level of this logger. 'INFO' will be assumed if its omitted.
+        Optional argument, The level of this logger. 'INFO' will be assumed if it's omitted.
     :type level:
         `str` = {"DEBUG"|"INFO"|"WARNING"|"CRITICAL"|"ERROR"} or
         `int` or `long` = {logging.DEBUG | logging.INFO | logging.WARNING | logging.CRITICAL | logging.ERROR}
 
     :param filename:
-        Optional keyword argument it will be used to create a `logging.FileHandler`. if its omitted or None,
+        Optional keyword argument it will be used to create a `logging.FileHandler`. if it's omitted or None,
         create a `logging.StreamHandler` using `sys.stdout` as the underlying stream.
     :type filename:
         `basestring`
@@ -151,10 +152,10 @@ class TimedRotatingLogger(SimpleLogger):
     >>> logger.info('msg')
     """
 
-    def __init__(self,  name=__name__, level='INFO', **handlerParams):
-        self._baseFilename = handlerParams.get('filename')
-        self._suffixFmt = handlerParams.pop('suffixFmt', SUFFIX_FMT)
+    def __init__(self,  name=__name__, level='INFO', suffixFmt='%Y-%m-%d', **handlerParams):
+        self._suffixFmt = suffixFmt
         self._suffix = time.strftime(self._suffixFmt)
+        self._baseFilename = handlerParams.get('filename')
         self._re_lock = threading.RLock()
         SimpleLogger.__init__(self, name, level, **handlerParams)
 
@@ -190,18 +191,18 @@ class TimedRotatingMemoryLogger(TimedRotatingLogger):
     `._rotate_handler()` be called.
 
     :param name:
-        Optional argument, The name of this logger. `__name__` will be used if its omitted.
+        Optional argument, The name of this logger. `__name__` will be used if it's omitted.
     :type format:
         `str`
 
     :param level:
-        Optional argument, The level of this logger. 'INFO' will be assumed if its omitted.
+        Optional argument, The level of this logger. 'INFO' will be assumed if it's omitted.
     :type level:
         `str` = {"DEBUG"|"INFO"|"WARNING"|"CRITICAL"|"ERROR"} or
         `int` or `long` = {logging.DEBUG | logging.INFO | logging.WARNING | logging.CRITICAL | logging.ERROR}
 
     :param filename:
-        Optional keyword argument it will be used to create a `logging.FileHandler`. if its omitted or None,
+        Optional keyword argument it will be used to create a `logging.FileHandler`. if it's omitted or None,
         create a `logging.StreamHandler` using `sys.stdout` as the underlying stream.
     :type filename:
         `basestring`
@@ -238,17 +239,14 @@ class TimedRotatingMemoryLogger(TimedRotatingLogger):
         `int` = {logging.DEBUG | logging.INFO | logging.WARNING | logging.CRITICAL | logging.ERROR}
     """
 
-    def __init__(self, name=__name__, level='INFO', **handlerParams):
-        capacity = handlerParams.get('capacity') or CAPACITY
-        flushInterval = handlerParams.get('flushInterval') or FLUSH_INTERVAL
-        flushLevel = handlerParams.get('flushLevel') or FLUSH_LEVEL
-        flushLevel = getattr(logging, flushLevel.upper()) if isinstance(flushLevel, basestring) else flushLevel
-        handlerParams.update({
-            'capacity': capacity,
-            'flushInterval': flushInterval,
-            'flushLevel': flushLevel,
-        })
-        TimedRotatingLogger.__init__(self, name, level, **handlerParams)
+    def __init__(self, name=__name__, level='INFO', suffixFmt='%Y-%m-%d', capacity=128, flushInterval=120, flushLevel='WARNING', 
+                 **handlerParams):
+        TimedRotatingLogger.__init__(self, name, level, suffixFmt,
+            capacity=capacity,
+            flushLevel=flushLevel,
+            flushInterval=getattr(logging, flushLevel.upper()) if isinstance(flushLevel, basestring) else flushLevel,
+             **handlerParams,
+         )
 
     def flush(self):
         """Ensure all log records in buffer has been flushed."""
