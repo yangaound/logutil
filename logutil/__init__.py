@@ -53,11 +53,10 @@ def make_handler(filename=None, format=LOG_RECORD_FMT, capacity=1, flushInterval
 
 
 class SimpleLogger(LoggerClass):
-    """This class inherits ``logging.Logger`` or its derived class and the argument `name` as well as `level` 
-    will be passed directly to the super class. the argument `handlerParams` are optional keyword argument 
-    which key can be `filename` and `format`. `handlerParams` will be used to create a appropriate handler 
-    that is a `logging.FileHandler`if the keyword argument `filename` is present or a `logging.StreamHandler`
-    using `sys.stdout` as the underlying stream.
+    """This class inherits ``logging.Logger`` or its derived class and the argument `name` as well as `level`
+    will be passed directly to the super class. the key of `handlerParams` can be `filename` and `format`
+    which will be used to create a appropriate handler that is a `logging.FileHandler` if the keyword argument
+    `filename` is present or a `logging.StreamHandler` using `sys.stdout` as the underlying stream.
 
     :param name:
         Optional argument, The name of this logger. `__name__` will be used if it's omitted.
