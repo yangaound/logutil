@@ -17,7 +17,7 @@ def make_handler(filename=None, format="[%(levelname)s][%(asctime)s] - %(message
     """Factory function that return a new instance of `logging.FileHandler`  or  `logging.StreamHandler` or `_MemoryHandler`(with buffer)
     according to the argument `capacity` and `filename`.
 
-    :param filename: It will be passed to create a `logging.FileHandler` if it's not None and the argument capacity <= 1 .
+    :param filename: It will be passed to create a `logging.FileHandler` if not None, and the argument capacity <= 1 .
     :param format: Format string for handlers.
     :param capacity: It will be passed to create a `_MemoryHandler` if its value greater then 1.
     :param flushInterval: the argument of the `_MemoryHandler`.
