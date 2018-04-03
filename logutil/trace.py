@@ -18,10 +18,8 @@ def cls_from_stact(stack):
         return locals['cls']
     else:
         clss = filter(lambda x: inspect.isclass(x) and hasattr(x, stack[3]), globals.values())
-        if not clss:
-            raise AssertionError('No class object')
-        if len(clss) > 1:
-            raise AssertionError('Multiple classes has this method: %s' % str(clss))
+        assert clss, 'Class not found'
+        assert len(clss) == 1, 'Multiple classes %s' % str(clss)
         return clss[0]
 
 
