@@ -24,7 +24,7 @@ def make_handler(filename=None, format="[%(levelname)s][%(asctime)s] - %(message
     :param flushInterval: the argument of the `_MemoryHandler`.
     :param flushLevel: the argument of the `_MemoryHandler`.
     """
-    # initialize base handler
+    # create a core handler
     if filename is None:
         handler = logging.StreamHandler(stream=sys.stdout)
     else:
@@ -33,10 +33,12 @@ def make_handler(filename=None, format="[%(levelname)s][%(asctime)s] - %(message
             if not os.path.exists(os.path.dirname(filename) or './'):
                 os.makedirs(os.path.dirname(filename), )
         handler = logging.FileHandler(filename)
-    # set base handler
+        
+    # configure the core handler
     formatter = logging.Formatter(format)
     handler.setFormatter(formatter)
-    # initialize buffered handler
+    
+    # create a wrapper handler that with buffering
     if capacity > 1:
         handler = _MemoryHandler(flushInterval, capacity=capacity, flushLevel=flushLevel, target=handler)
     return handler
@@ -44,7 +46,7 @@ def make_handler(filename=None, format="[%(levelname)s][%(asctime)s] - %(message
 
 class SimpleLogger(LoggerClass):
     """This class inherits ``logging.Logger`` or its derived class and the argument `name` as well as `level`
-    will be passed directly to the super class. The keys of `handlerParams` can be filename/format/capacity/flushLevel/flushInterval
+    will be passed directly to the super class. The keys of `handlerParams` can be 'filename' or 'format'
     which will be used to create a appropriate handler.
 
     E.g., Create and use SimpleLogger:
@@ -64,9 +66,9 @@ class SimpleLogger(LoggerClass):
         :param name: The name of this logger. `__name__` will be used if it's omitted.
         :param level: The level of this logger. 'INFO' will be assumed if it's omitted.
         :type level: `str` = {"DEBUG"|"INFO"|"WARNING"|"CRITICAL"|"ERROR"}
-        :param handlerParams: Keyword arguments it can be filename/format/capacity/flushLevel/flushInterval.
+        :param handlerParams: Keyword arguments which key can be 'filename' or 'format'.
         """
-        LoggerClass.__init__(self, name, level.upper())
+        LoggerClass.__init__(self, name, level)
         self._handlerParams = handlerParams
         self._create_and_attache_handler()
 
@@ -75,9 +77,10 @@ class SimpleLogger(LoggerClass):
         self.addHandler(handler)
 
     def _del_handlers(self):
-        for h in self.handlers:
-            h.close()
-            self.removeHandler(h)
+        with _lock:
+            for h in self.handlers:
+                h.close()
+                self.removeHandler(h)
 
 
 class TimedRotatingLogger(SimpleLogger):
@@ -101,11 +104,12 @@ class TimedRotatingLogger(SimpleLogger):
         :param suffixFmt: It will be used to call time.strftime(suffixFmt) to generate a suffix of full_filename,
              full_filename = filename + '.' + time.strftime(suffixFmt).
              Default value: "%Y-%m-%d", it means that files will be rotated every day at midnight.
-        :param handlerParams: Keyword arguments it can be filename/format/capacity/flushLevel/flushInterval.
+        :param handlerParams: Keyword arguments which key can be 'filename' or 'format'.
         """
+        assert handlerParams.get('filename', None), 'filename must be specified when initialize %s' % self.__class__
         self._suffixFmt = suffixFmt
         self._suffix = time.strftime(self._suffixFmt)
-        self._baseFilename = handlerParams.get('filename')
+        self._baseFilename = handlerParams['filename']
         self._re_lock = threading.RLock()
         SimpleLogger.__init__(self, name, level, **handlerParams)
 
@@ -126,15 +130,14 @@ class TimedRotatingLogger(SimpleLogger):
             self._create_and_attache_handler()
 
     def _create_and_attache_handler(self):
-        if self._baseFilename is not None:
-            self._handlerParams['filename'] = self._baseFilename + '.' + self._suffix
+        self._handlerParams['filename'] = self._baseFilename + '.' + self._suffix
         SimpleLogger._create_and_attache_handler(self)
 
 
 class TimedRotatingMemoryLogger(TimedRotatingLogger):
     """This class inherits ``logutil.TimedRotatingLogger`` and the argument `handlerParams` will be 
-    passed to super class as additional keyword arguments. This logger buffers messages; clients working threads 
-    just need to push message to memory; a new thread named 'flusher' asynchronously flush buffer once 
+    passed to super class as additional keyword arguments. This logger buffers messages, and clients working threads 
+    just need to push message to memory, a new thread named 'flusher' asynchronously flush buffer once 
     some condition be satisfied.
 
     Note: this logger just maintains one handler, others clients added will be popped out when method
@@ -156,7 +159,7 @@ class TimedRotatingMemoryLogger(TimedRotatingLogger):
         :type flushLevel:
            `str` = {"DEBUG"|"INFO"|"WARNING"|"CRITICAL"|"ERROR"} or
            `int` = {logging.DEBUG | logging.INFO | logging.WARNING | logging.CRITICAL | logging.ERROR}
-        :param handlerParams: Keyword arguments it can be filename/format/capacity/flushLevel/flushInterval.
+        :param handlerParams: Keyword arguments which key can be 'filename' or 'format'.
         """
 
         TimedRotatingLogger.__init__(self, name, level, suffixFmt,
