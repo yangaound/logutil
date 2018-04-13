@@ -106,10 +106,10 @@ class TimedRotatingLogger(SimpleLogger):
              Default value: "%Y-%m-%d", it means that files will be rotated every day at midnight.
         :param handlerParams: Keyword arguments which key can be 'filename' or 'format'.
         """
-        assert handlerParams.get('filename', None), 'filename must be specified when initialize %s' % self.__class__
+        # assert handlerParams.get('filename', None), 'filename must be specified when initialize %s' % self.__class__
         self._suffixFmt = suffixFmt
         self._suffix = time.strftime(self._suffixFmt)
-        self._baseFilename = handlerParams['filename']
+        self._baseFilename = handlerParams.get('filename', None)
         self._re_lock = threading.RLock()
         SimpleLogger.__init__(self, name, level, **handlerParams)
 
@@ -130,7 +130,8 @@ class TimedRotatingLogger(SimpleLogger):
             self._create_and_attache_handler()
 
     def _create_and_attache_handler(self):
-        self._handlerParams['filename'] = self._baseFilename + '.' + self._suffix
+        if self._baseFilename is not None:
+            self._handlerParams['filename'] = self._baseFilename + '.' + self._suffix
         SimpleLogger._create_and_attache_handler(self)
 
 
