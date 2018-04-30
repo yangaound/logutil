@@ -3,7 +3,7 @@ This package defines 3 classes which extend ``logging.Logger`` or its derived cl
 
 
 ### class ``logutil.Simpleogger``(name=`__name__`, level='INFO', **handlerParams)
-This class inherits ``logging.Logger`` or its derived class and the argument `name` as well as `level` will be passed directly to the super class. the keys of `handlerParams` can be `filename` and `format` which will be used to create a appropriate handler that is a `logging.FileHandler` if the keyword argument `filename` is present or a `logging.StreamHandler` using `sys.stdout` as the underlying stream.
+This class inherits ``logging.Logger`` or its derived class and the argument `name` as well as `level` will be passed directly to the super class. the keys of `handlerParams` can be `'filename'` and `'format'` which will be used to create a appropriate handler that is a `logging.FileHandler` if the keyword argument `filename` is present or a `logging.StreamHandler` using `sys.stdout` as the underlying stream.
 ```
 >>> import logutil
 >>> logger = logutil.SimpleLogger(name='log') # create a logger named 'log' and write messages to stdout
